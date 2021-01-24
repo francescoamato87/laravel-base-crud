@@ -3,7 +3,7 @@
 @section('content')
 
     <div class="container mb-5">
-        <h1>Create a new Classroom</h1>
+        <h1>Edit {{ $classroom->name }} </h1>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -16,20 +16,20 @@
         @endif
 
 
-        <form action=" {{route('classrooms.store')}} " method="POST">
+        <form action=" {{ route('classrooms.update', $classroom->id) }} " method="POST">
             @csrf
-            @method('POST')
+            @method('PATCH')
 
             <div class="form-group">
                 <label for="name">Classroom name</label>
-                <input class="form-control" type="text" placeholder="inserisci nome..." name="name" value=" {{ old('name') }} ">
+                <input class="form-control" type="text" name="name" value=" {{ old('name', $classroom->name) }} ">
             </div>
             <div class="form-group">
                 <label for="description">Classroom description</label>
-                <textarea class="form-control" placeholder="inserisci descrizione..." name="description">{{ old('description') }}</textarea>
+                <textarea class="form-control" name="description">{{ old('description', $classroom->description) }}</textarea>
             </div>
             <div class="form-group">
-                <input class="btn btn-primary" type="submit" value="Create">
+                <input class="btn btn-primary" type="submit" value="Update">
             </div>
         </form>
 

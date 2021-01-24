@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Classroom;
+use Illuminate\Validation\Rule;
 
 class ClassroomController extends Controller
 {
@@ -42,23 +43,33 @@ class ClassroomController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->all();
         // dd($request->all());
-        // $data = $request->all();
         // dd($data);
 
         // VALIDAZIONE
         $request->validate([
             'name'=> 'required|unique:classrooms|max:10',
-            'description' => 'required'
+            'description' => 'required',
         ]);
 
         // SALVARE A DB
-        $classroom = new Classroom();
-        $classroom->name = $data['nome'];
-        $classroom->name = $data['description'];
+
+        // $classroom = new Classroom();
+        // $classroom->name = $data['name'];
+        // $classroom->description = $data['description'];
+
+        // SALVARE A DB CON METODO fillable;
+        $classroom = New Classroom();
+        $classroom->fill($data); // <---- guarda in Classroom
 
         $saved = $classroom->save();
-        dd($saved);
+        // dd($saved);
+
+        // REINDIRIZZARE DOVE VOGLIAMO NELLA PAGINA <-----------
+        if($saved == true) {
+            return redirect()->route('classrooms.show', $classroom->id);  // <----ti reindirizza alla pagina di dettaglio
+        }
 
     }
 
@@ -81,7 +92,7 @@ class ClassroomController extends Controller
     //     return view('classrooms.show', compact('classroom'));
     // }
 
-
+        // Crud 2
 
     /**
      * Show the form for editing the specified resource.
@@ -89,9 +100,11 @@ class ClassroomController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit($id) // <---- EDITARE UN POST GIA' ESISTENTE
     {
-    //
+        $classroom = Classroom::find($id);
+
+        return view ('classrooms.edit', compact('classroom'));
     }
 
     /**
@@ -101,9 +114,30 @@ class ClassroomController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id) // <----- UPDATE: permette un aggiornamento in tempo reale di un contenuto già esistente
     {
-        //
+        // <--- dati inviati dalla FORM
+        $data =  $request->all(); // <---- prendiamo i DATI inviati dal nostro form Update e ci crea un Array
+
+        // ISTANZA SPECIFICA
+        $classroom = Classroom::find($id);
+
+        $request->validate([
+        'name' => [
+            'required',
+            Rule::unique('classrooms')->ignore($classroom->id),
+            'max:10'
+        ],
+        'description' => 'required'
+        ]);
+
+        // AGGIORNARE DATI DB
+        $updated = $classroom->update($data); // $fillable nel model
+
+        // Creiamo la rotta per l'UPDATE
+        if($updated) {
+            return redirect()->route('classrooms.show', $classroom->id);
+        }
     }
 
     /**
@@ -114,6 +148,14 @@ class ClassroomController extends Controller
      */
     public function destroy($id)
     {
-        //
+       $classroom = CLassroom::find($id);
+
+       $ref = $classroom->name;
+       $deleted = $classroom->delete();
+
+
+      if ($deleted) {
+        return redirect()->route('classrooms.index')->with('deleted', $ref);
+        }
     }
 }
